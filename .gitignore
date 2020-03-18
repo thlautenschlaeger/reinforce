@@ -37,6 +37,7 @@ MANIFEST
 .DS_STORE
 
 src/runs
+runs/
 
 
 

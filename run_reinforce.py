@@ -12,10 +12,12 @@ def run(args=None):
     parser.add_argument('--gamma', type=int, default=0.99, help='Discount factor for advantage')
     parser.add_argument('--horizon', type=int, default=2000, help='Total rollout horizon')
     parser.add_argument('--n_runs', type=int, default=1000, help='Total number of reinforce steps')
-    parser.add_argument('--lr', type=float, default=1e-3, help='Learn rate')
+    parser.add_argument('--lr', type=float, default=1e-2, help='Learn rate')
     parser.add_argument('--nonlin', type=str, default='tanh', help='Non linearities for neural networks')
     parser.add_argument('--layer_norm', type=bool, default=True, help='Layer normalization')
     parser.add_argument('--seed', type=int, default=1337, help='Random seed')
+    parser.add_argument('--batch_size', type=int, default=32, help='Size of batches for each optimizer step')
+
 
 
 
@@ -38,7 +40,8 @@ def run(args=None):
     torch.manual_seed(args.seed)
 
     model = Reinforce(env, n_runs=args.n_runs, gamma=args.gamma, horizon=args.horizon, epochs=1,
-                      lr=args.lr, continuous_policy=continuous_policy, **policy_kwargs)
+                      lr=args.lr, continuous_policy=continuous_policy, batch_size=args.batch_size,
+                      **policy_kwargs)
     model.run()
 
 

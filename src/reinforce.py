@@ -16,7 +16,7 @@ to_npy = lambda arr: arr.detach().double().cpu().numpy()
 
 class Reinforce:
 
-    def __init__(self, env, n_runs, gamma, horizon, epochs, lr=1e-3, continuous_policy=True, **kwargs):
+    def __init__(self, env, n_runs, gamma, horizon, epochs, lr=1e-3, batch_size=32, continuous_policy=True, **kwargs):
         self.policy = GaussianPolicy(**kwargs) if continuous_policy else CategoricalPolicy(**kwargs)
         self.optim = optim.Adam(self.policy.parameters(), lr=lr)
         self.env = env
@@ -29,6 +29,7 @@ class Reinforce:
         self.dist = Normal if continuous_policy else Categorical
         self.cont_p = continuous_policy
         self.reward_flag = self.check_reward()
+        self.batch_size = batch_size
 
     def check_reward(self):
         """ Check if positive or negative rewards """
@@ -128,7 +129,7 @@ class Reinforce:
             disc_rewards = self.discount_rewards(reward, masks, self.gamma)
             cum_disc_reward = torch.sum(disc_rewards)
 
-            self.reinforce_update(act, obs, disc_rewards, log_probs, self.epochs)
+            self.reinforce_update(act, obs, disc_rewards, log_probs, self.epochs, self.batch_size)
 
 
             eval_reward = self.eval_policy()
