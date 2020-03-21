@@ -110,11 +110,12 @@ class Reinforce:
                 dist = self.dist(*dist_params)
 
                 log_prob = dist.log_prob(_act)
+                entropy = dist.entropy().mean()
 
                 # Reward flag to check if reward is positive or negative
                 # loss = self.reward_flag * torch.mean(-log_prob * _rewards)
                 # loss = -torch.mean(log_prob * _rewards)
-                loss = self.reward_flag * torch.mean(log_prob * _rewards)
+                loss = self.reward_flag * torch.mean(log_prob * _rewards) + entropy
                 self.optim.zero_grad()
                 loss.backward()
                 self.optim.step()
