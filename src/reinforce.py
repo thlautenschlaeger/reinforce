@@ -28,16 +28,7 @@ class Reinforce:
         self.epochs = epochs
         self.dist = Normal if continuous_policy else Categorical
         self.cont_p = continuous_policy
-        self.reward_flag = self.check_reward()
         self.batch_size = batch_size
-
-    def check_reward(self):
-        """ Check if positive or negative rewards """
-        self.env.reset()
-        action = self.env.action_space.sample()
-        _, reward, _, _ = self.env.step(action)
-
-        return 1 if reward > 0 else -1
 
 
     def perform_rollout(self, obs):
@@ -110,12 +101,12 @@ class Reinforce:
                 dist = self.dist(*dist_params)
 
                 log_prob = dist.log_prob(_act)
-                entropy = dist.entropy().mean()
+                entropy = dist.entropy()
 
                 # Reward flag to check if reward is positive or negative
                 # loss = self.reward_flag * torch.mean(-log_prob * _rewards)
                 # loss = -torch.mean(log_prob * _rewards)
-                loss = self.reward_flag * torch.mean(log_prob * _rewards) + entropy
+                loss = torch.mean(log_prob * _rewards) + entropy.mean()
                 self.optim.zero_grad()
                 loss.backward()
                 self.optim.step()
