@@ -60,7 +60,6 @@ class Reinforce:
 
             actions[i] = action
             observations[i] = to_torch(nxt_obs)
-            # rewards[i] = to_torch(reward) if self.cont_p else to_torch(np.array([reward]))
             rewards[i] = to_torch(reward) if isinstance(reward, np.ndarray) else to_torch(np.array([reward]))
             masks[i] = 1 - done
             log_probs[i] = log_prob.sum()
@@ -90,7 +89,7 @@ class Reinforce:
 
     def reinforce_update(self, actions, obs, rewards, log_probs, epochs, batch_size=32, shuffle=True):
 
-        rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-9)
+        rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-16)
         dataset = TensorDataset(actions, obs, rewards, log_probs)
         loader = DataLoader(dataset, batch_size, shuffle=shuffle)
 
@@ -103,10 +102,7 @@ class Reinforce:
                 log_prob = dist.log_prob(_act)
                 entropy = dist.entropy()
 
-                # Reward flag to check if reward is positive or negative
-                # loss = self.reward_flag * torch.mean(-log_prob * _rewards)
-                # loss = -torch.mean(log_prob * _rewards)
-                loss = torch.mean(log_prob * _rewards) + entropy.mean()
+                loss = torch.mean(log_prob * _rewards) #+ entropy.mean() * 0.0001
                 self.optim.zero_grad()
                 loss.backward()
                 self.optim.step()
